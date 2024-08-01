@@ -9,7 +9,7 @@ pipeline{
     stages{
         stage('checkout'){
             steps{
-                git 'git@github.com:Shivaredd/mavne-build2.git'
+                checkout([$class: 'GitSCM', branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'github access', url: 'https://github.com/Shivaredd/mavne-build2.git']]])
             }
         }
         stage('build'){
