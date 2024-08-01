@@ -1,20 +1,21 @@
-pipeline{
+pipeline {
     agent any
 
     tools {
-         maven 'maven'
-         jdk 'java'
+        maven 'maven'
+        jdk 'java'
     }
 
-    stages{
-        stage('checkout'){
+    stages {
+        stage('Checkout') {
             steps {
-                git 'https://github.com/Shivaredd/mavne-build2.git'
+                // Specify the branch if it is not 'master'
+                git branch: 'main', url: 'https://github.com/Shivaredd/mavne-build2.git'
             }
         }
-        stage('build'){
-            steps{
-               bat 'mvn package'
+        stage('Build') {
+            steps {
+                bat 'mvn package'
             }
         }
     }
