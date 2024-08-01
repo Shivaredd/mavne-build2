@@ -8,7 +8,7 @@ pipeline{
 
     stages{
         stage('checkout'){
-            steps{
+            steps {
                 git 'https://github.com/Shivaredd/mavne-build2.git'
             }
         }
