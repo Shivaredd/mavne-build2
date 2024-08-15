@@ -1,0 +1,66 @@
+name: Maven Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Install Maven 3.9.2
+      run: |
+        # Remove any existing Maven installations
+        sudo rm -rf /usr/share/apache-maven
+        sudo rm -rf /usr/local/maven
+        
+        # Download and install Maven 3.9.2
+        wget https://archive.apache.org/dist/maven/maven-3/3.9.2/binaries/apache-maven-3.9.2-bin.tar.gz
+        tar -xzf apache-maven-3.9.2-bin.tar.gz
+        sudo mv apache-maven-3.9.2 /usr/local/maven
+        # Update environment variables for the current session
+        echo "M2_HOME=/usr/local/maven" >> $GITHUB_ENV
+        echo "PATH=/usr/local/maven/bin:$PATH" >> $GITHUB_ENV
+    - name: Verify Maven Version
+      run: mvn -version
+
+    - name: Cache Maven dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
+    - name: Build with Maven
+      run: mvn clean install
+
+    - name: Run tests
+      run: mvn test
+
+    - name: Verify build
+      run: ls
+
+    - name: Set up AWS CLI
+      run: |
+        sudo apt-get install -y awscli
+    - name: Upload .gz file to S3
+      run: |
+        aws s3 cp apache-maven-3.9.2-bin.tar.gz s3://backend-test11/
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: 'eu-north-1'  # replace with your region
